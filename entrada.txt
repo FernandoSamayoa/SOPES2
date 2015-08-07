@@ -1,0 +1,27 @@
+T1(P1(R1|S))
+T2(P2(R2|S))
+T3(P3(R1|S))
+T4(P1(R2|S))
+T5(P2(R3|S))
+T6(P2(f))
+T7(P1(f))
+T8(P3(R3|S))
+
+
+INTERBLOQUEO----
+T1(P1(R1|S))
+T2(P2(R2|S))
+T3(P3(R1|S))
+T4(P1(R2|S))
+T5(P2(R1|S))
+
+cuadrado -> circulo recurso ASIGNADO a proceso (lista de recursos asociados)
+circulo -> cuadrado proceso SOLICITA un recurso (peticion cola de espera)
+
+lista
+procesos -> dependencias(recursos)-> solitud de procesos a recurso
+vivos
+
+P3
+P1
+P2
