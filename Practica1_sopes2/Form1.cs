@@ -427,16 +427,16 @@ namespace Practica1_sopes2
                         p.eliminar(recurso);
                         //mataria el recurso
                         //elimino las peticiones de espera del proceso que estoy apagando
-                        for (int w = 0; w < cola_espera.Count; w++)
+                       /* for (int w = 0; w < cola_espera.Count; w++)
                          {
                              Espera es = (Espera)cola_espera[w];
                              if (es.get_proc().Equals(proc))
                              {
                                  cola_espera.RemoveAt(w);
                              }
-                         }
-                        if (!directo)
-                            terminar_proc(proc);
+                         }*/
+                        //if (!directo)
+                          //  terminar_proc(proc);
                         flag = true;
                     }
                     else 
@@ -459,8 +459,8 @@ namespace Practica1_sopes2
         {
             bool flag = false;
             Proceso p = (Proceso)mis_procesos[nombre_proc];
-            if (p.get_alive())
-            {
+          //  if (p.get_alive())
+            //{
                 string[] myarray = p.get_usando();
                 p.limpiar();
                 foreach (string s in myarray)
@@ -469,10 +469,20 @@ namespace Practica1_sopes2
                     this.textBox2.AppendText("se libero " + s + " de " + nombre_proc + "\n");
                 }
                 p.set_alive(false);
+
+                //elimino las peticiones de espera del proceso que estoy apagando
+                 for (int w = 0; w < cola_espera.Count; w++)
+                  {
+                      Espera es = (Espera)cola_espera[w];
+                      if (es.get_proc().Equals(nombre_proc))
+                      {
+                          cola_espera.RemoveAt(w);
+                      }
+                  }
                 flag = true;
-            }
-            else
-                this.textBox2.AppendText(nombre_proc + " ya se encuentra suspendido\n");
+            //}
+            //else
+              //  this.textBox2.AppendText(nombre_proc + " ya se encuentra suspendido\n");
             return flag;
         }
         private void verificar_esperas()
@@ -503,7 +513,7 @@ namespace Practica1_sopes2
         private void despertar_proceso(String nombre)
         {
             Proceso p = (Proceso)mis_procesos[nombre];
-            if (!p.get_alive() && !tiene_pendientes(nombre))
+            if ((!p.get_alive() || p.get_alive()) && !tiene_pendientes(nombre))
             {
                 p.set_alive(true);
             }
