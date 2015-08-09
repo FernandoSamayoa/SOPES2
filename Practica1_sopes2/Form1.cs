@@ -222,18 +222,17 @@ namespace Practica1_sopes2
                         String nproc = nodo.ChildNodes[0].Token.Value.ToString();
                         String estado = nodo.ChildNodes[4].ChildNodes[0].Token.Value.ToString();
                         String asignados="";
-                        despertar_proceso(nproc);
+                        
                         asignados = ejecutar(nodo.ChildNodes[2]);
                         operar(nproc, asignados, estado);
-                        
+                        despertar_proceso(nproc);
 
                     }
                     else
                     {
                         if (nodo.ChildNodes.Count == 4 && nodo.ChildNodes[2].Term.Name.Equals("f"))
                         {
-                            terminar_proc(nodo.ChildNodes[0].Token.Value.ToString());
-                            //System.Diagnostics.Debug.WriteLine(nodo.ChildNodes[0].Token.Value.ToString() + " ha dejado de ejecutarse");
+                            if(terminar_proc(nodo.ChildNodes[0].Token.Value.ToString()))
                             this.textBox2.AppendText(nodo.ChildNodes[0].Token.Value.ToString() + " ha dejado de ejecutarse" + "\n");
                         }
                         else
@@ -332,9 +331,13 @@ namespace Practica1_sopes2
                     foreach (string s in split)
                     {
                         if (!s.Equals(""))
-                            if (tliberar(proc, s))
+                            if (tliberar(proc, s, false))
                             {
                                 this.textBox2.AppendText("se libero " + s + " de " + proc + "\n");
+                            }
+                            else
+                            {
+                                this.textBox2.AppendText("No se libero " + s + " de " + proc + "\n");
                             }
                     }
                     break;
@@ -406,7 +409,7 @@ namespace Practica1_sopes2
             return flag;
         }
 
-        private bool tliberar(String proc, String recurso)
+        private bool tliberar(String proc, String recurso, bool directo)
         {
             bool flag = false;
             if (mis_procesos.ContainsKey(proc) && mis_recursos.ContainsKey(recurso))
@@ -419,17 +422,30 @@ namespace Practica1_sopes2
                     String actual = r.get_ejecutor();
                     r.set_ejecutor("");
                     Proceso p = (Proceso)mis_procesos[proc];
-                    p.eliminar(recurso);
-                    //elimino las peticiones de espera del proceso que estoy apagando
-                    for (int w = 0; w < cola_espera.Count; w++)
+                    if (p.get_alive())
                     {
-                        Espera es = (Espera)cola_espera[w];
-                        if (es.get_proc().Equals(proc))
-                        {
-                            cola_espera.RemoveAt(w);
-                        }
-                    }
+                        p.eliminar(recurso);
+                        //mataria el recurso
+                        //elimino las peticiones de espera del proceso que estoy apagando
+                        for (int w = 0; w < cola_espera.Count; w++)
+                         {
+                             Espera es = (Espera)cola_espera[w];
+                             if (es.get_proc().Equals(proc))
+                             {
+                                 cola_espera.RemoveAt(w);
+                             }
+                         }
+                        if (!directo)
+                            terminar_proc(proc);
                         flag = true;
+                    }
+                    else 
+                    {
+                        flag = false;
+                    }
+
+                  
+                        
                 }
                 else
                 {
@@ -439,17 +455,25 @@ namespace Practica1_sopes2
             return flag;
         }
 
-        private void terminar_proc(String nombre_proc)
+        private bool terminar_proc(String nombre_proc)
         {
+            bool flag = false;
             Proceso p = (Proceso)mis_procesos[nombre_proc];
-            p.set_alive(false);
-            string[] myarray = p.get_usando();
-            p.limpiar();
-            foreach (string s in myarray)
+            if (p.get_alive())
             {
-                tliberar(nombre_proc, s);
-                this.textBox2.AppendText("se libero " + s + " de " + nombre_proc + "\n");
+                string[] myarray = p.get_usando();
+                p.limpiar();
+                foreach (string s in myarray)
+                {
+                    tliberar(nombre_proc, s, true);
+                    this.textBox2.AppendText("se libero " + s + " de " + nombre_proc + "\n");
+                }
+                p.set_alive(false);
+                flag = true;
             }
+            else
+                this.textBox2.AppendText(nombre_proc + " ya se encuentra suspendido\n");
+            return flag;
         }
         private void verificar_esperas()
         {
@@ -479,17 +503,46 @@ namespace Practica1_sopes2
         private void despertar_proceso(String nombre)
         {
             Proceso p = (Proceso)mis_procesos[nombre];
-            if (!p.get_alive())
+            if (!p.get_alive() && !tiene_pendientes(nombre))
             {
                 p.set_alive(true);
             }
+            else
+            {
+                p.set_alive(false);
+            }
+        }
+
+        private bool tiene_pendientes(String nproc)
+        {
+            bool flag = true;
+            int tam = cola_espera.Count;
+            if (tam == 0)
+                flag = false;
+            else
+            {
+                for (int i = 0; i < tam; i++)
+                {
+                    Espera e = (Espera)cola_espera[i];
+                    if (e.get_proc().Equals(nproc))
+                    {
+                        flag = true;
+                        break;
+                    }
+                    else
+                    {
+                        flag = false;
+                    }
+                }
+            }
+                return flag;
         }
         private void verificar_procesos() 
         {
             foreach(DictionaryEntry llave in mis_procesos)
             {
                 Proceso p = (Proceso)mis_procesos[llave.Key.ToString()];
-                if (p.get_alive())
+                if (p.get_alive() && !tiene_pendientes(llave.Key.ToString()))
                     this.textBox2.AppendText(llave.Key.ToString() + " se esta ejecutando \n");
             }
             
