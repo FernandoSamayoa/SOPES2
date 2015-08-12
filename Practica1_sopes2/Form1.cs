@@ -384,8 +384,18 @@ namespace Practica1_sopes2
                             {
                                 //no puedo asignar y entro a cola de espera
                                 this.textBox2.AppendText("No se puede asignar " + recurso + " a " + proc + " espera circular \n");
-                                /*Espera e = new Espera(proc, recurso);
-                                cola_espera.Add(e);*/
+                                bool esta=false;
+                                for (int i = 0; i < cola_espera.Count; i++)
+                                {
+                                    Espera a = (Espera)cola_espera[i];
+                                    if (a.get_proc().Equals(proc) && a.get_rec().Equals(recurso))
+                                        esta = true;
+                                }
+                                if (!esta)
+                                {
+                                    Espera e = new Espera(proc, recurso);
+                                    cola_espera.Add(e);
+                                }
                                 flag = false;
                             }
                         }
@@ -422,8 +432,8 @@ namespace Practica1_sopes2
                     String actual = r.get_ejecutor();
                     r.set_ejecutor("");
                     Proceso p = (Proceso)mis_procesos[proc];
-                    if (p.get_alive())
-                    {
+                    //if (p.get_alive())
+                    //{
                         p.eliminar(recurso);
                         //mataria el recurso
                         //elimino las peticiones de espera del proceso que estoy apagando
@@ -438,11 +448,11 @@ namespace Practica1_sopes2
                         //if (!directo)
                           //  terminar_proc(proc);
                         flag = true;
-                    }
+                    /*}
                     else 
                     {
                         flag = false;
-                    }
+                    }*/
 
                   
                         
